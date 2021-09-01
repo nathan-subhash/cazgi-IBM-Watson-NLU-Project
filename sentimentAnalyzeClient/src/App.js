@@ -43,16 +43,19 @@ class App extends React.Component {
     }
     fetch(url).then((response)=>{
         response.text().then((data)=>{
-        this.setState({sentimentOutput:data});
-        let output = data;
-        if(data === "positive") {
-          output = <div style={{color:"green",fontSize:20}}>{data}</div>
-        } else if (data === "negative"){
-          output = <div style={{color:"red",fontSize:20}}>{data}</div>
-        } else {
-          output = <div style={{color:"orange",fontSize:20}}>{data}</div>
+            this.setState({sentimentOutput:data});
+            let output = data;
+            if(data === "positive") {
+                output = <div style={{color:"green",fontSize:20}}>{data}</div>
+            } else if (data === "negative"){
+                output = <div style={{color:"red",fontSize:20}}>{data}</div>
+            } else {
+                output = <div style={{color:"yellow",fontSize:20}}>{data}</div>
+          
         }
         this.setState({sentimentOutput:output});
+      }).catch(error =>{
+            this.setState({ sentimentOutput: <div style={{ color: "red", fontSize: 20 }}> {this.validateError(error)} </div> });
       })});
   }
 
@@ -66,10 +69,24 @@ class App extends React.Component {
       url = url+"/text/emotion/?text="+document.getElementById("textinput").value;
     }
     fetch(url).then((response)=>{
-      response.json().then((data)=>{
-      this.setState({sentimentOutput:<EmotionTable emotions={data}/>});
-  })})  ;
+      if (response.data !== 'Without data') {
+                this.setState({ sentimentOutput: <EmotionTable emotions={response.data} /> });
+            } else {
+                this.setState({ sentimentOutput:  <div style={{ color: "orange", fontSize: 20 }}>{response.data}</div>});
+            }
+        }).catch(error => {
+            this.setState({ sentimentOutput: <div style={{ color: "red", fontSize: 20 }}>{this.validateError(error)}</div> });
+        });
   }
+   validateError(error) {
+        var errorData = error.message;
+        if (this.state.mode === "url") {
+            errorData += " Invalid URL";
+        } else {
+            errorData += " Unrecognized language";
+        }
+        return errorData;
+    }
   
 
   render() {
